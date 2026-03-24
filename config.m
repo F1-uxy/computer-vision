@@ -14,7 +14,12 @@ C.useProvidedSplit = false;
 C.imageSize = [256 256];
 
 C.thumbnailSize = [32 32];
-C.knn.k = 9;
+C.greyscale = false;
+
+C.knn.k = 16;
+C.knn.dist = 'euclidean';
+C.knn.std = false;
+C.knn.auto = true;
 
 C.hog.cellSize = [8 8];
 C.svm.kernel = "linear";

@@ -35,15 +35,15 @@ classes = C.classOrder;
 % Of course, you need to test your fine-tune model on the test set part of the dataset using the Matlab built in predict function.
 
 
-[Xtr1, ytr] = extractTinyImages(imdsTrain, C.thumbnailSize, false);
-[Xte1, yte] = extractTinyImages(imdsTest,  C.thumbnailSize, false);
+[Xtr1, ytr] = extractTinyImages(imdsTrain, C.thumbnailSize, C.greyscale);
+[Xte1, yte] = extractTinyImages(imdsTest,  C.thumbnailSize, C.greyscale);
 
 mdl1Path = fullfile(C.modelCacheDir, 'Task1_kNN_model.mat');
 if exist(mdl1Path, 'file')
     modelData = load(mdl1Path, 'mdl1');
     mdl1 = modelData.mdl1;
 else
-    mdl1 = trainKNN(Xtr1, ytr, 5, 'euclidean'); 
+    mdl1 = trainKNN(Xtr1, ytr, C.knn.auto, C.knn.k, C.knn.dist, C.knn.std); 
     % save(mdl1Path, 'mdl1'); Enable this one happy with model otherwise
     % you have to delete the cache manually
 end
