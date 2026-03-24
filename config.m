@@ -9,6 +9,8 @@ C.classOrder = {'bedroom', 'livingroom', 'kitchen', 'store', 'house', ...
     'industrial', 'tallbuilding', 'stadium', 'highway', 'street', ...
     'mountain', 'coast', 'field', 'forest', 'underwater'};
 
+%Task 1
+
 C.useProvidedSplit = false;
 
 C.imageSize = [256 256];
@@ -21,9 +23,13 @@ C.knn.dist = 'euclidean';
 C.knn.std = false;
 C.knn.auto = true;
 
+
+%Task 2
 C.hog.cellSize = [8 8];
 C.svm.kernel = "linear";
+C.svm.boxConstraint = 1;
 
+%Task 3
 C.bovw.numWords = 200;
 C.bovw.stepSize = 8;
 

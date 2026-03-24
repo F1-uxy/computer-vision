@@ -34,7 +34,7 @@ classes = C.classOrder;
 % Your fine-tuning should be done using cross-validation on a training set part of the dataset.
 % Of course, you need to test your fine-tune model on the test set part of the dataset using the Matlab built in predict function.
 
-
+%{ 
 [Xtr1, ytr] = extractTinyImages(imdsTrain, C.thumbnailSize, C.greyscale);
 [Xte1, yte] = extractTinyImages(imdsTest,  C.thumbnailSize, C.greyscale);
 
@@ -61,7 +61,7 @@ for i = 1:9
     imshow(img);
     title(string(ytr(i)));
 end
-
+%}
 %% ================= TASK 2 =================
 % As in Task 1, you need to implement exctractHOG and trainSVM functions.
 % As above you should include more parameters. You should define them in config.
@@ -96,8 +96,8 @@ end
 
 % You shoud use this approach in all places in your coursework where you use SVM.
 
-mdl2 = trainSVM(Xtr2, ytr, C.svm.kernel);
-yhat2 = predict(mdl2, Xte2);
+mdl2 = trainSVM(Xtr2, ytr, true, C.svm.kernel);
+yhat2 = predictSVM(mdl2, Xte2); 
 
 runFullEvaluation(imdsTest, yte, yhat2, classes, "Task2_HOG_SVM", C.outDir);
 
