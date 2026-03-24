@@ -35,21 +35,32 @@ classes = C.classOrder;
 % Of course, you need to test your fine-tune model on the test set part of the dataset using the Matlab built in predict function.
 
 
-[Xtr1, ytr] = extractTinyImages(imdsTrain, C.thumbnailSize);
-[Xte1, yte] = extractTinyImages(imdsTest,  C.thumbnailSize);
+[Xtr1, ytr] = extractTinyImages(imdsTrain, C.thumbnailSize, false);
+[Xte1, yte] = extractTinyImages(imdsTest,  C.thumbnailSize, false);
 
 mdl1Path = fullfile(C.modelCacheDir, 'Task1_kNN_model.mat');
 if exist(mdl1Path, 'file')
     modelData = load(mdl1Path, 'mdl1');
     mdl1 = modelData.mdl1;
 else
-    mdl1 = trainKNN(Xtr1, ytr); 
-    save(mdl1Path, 'mdl1');
+    mdl1 = trainKNN(Xtr1, ytr, 5, 'euclidean'); 
+    % save(mdl1Path, 'mdl1'); Enable this one happy with model otherwise
+    % you have to delete the cache manually
 end
 
 yhat1 = predict(mdl1, Xte1);
 
 runFullEvaluation(imdsTest, yte, yhat1, classes, "Task1_kNN", C.outDir);
+
+%% === TASK 1 TESTERS ===
+% Just displays a few tiny'ified images for a sanity check
+figure;
+for i = 1:9
+    img = reshape(Xtr1(i,:), C.thumbnailSize(1), C.thumbnailSize(2), 1); % 1 for greyscale ; 3 for rgb
+    subplot(3,3,i);
+    imshow(img);
+    title(string(ytr(i)));
+end
 
 %% ================= TASK 2 =================
 % As in Task 1, you need to implement exctractHOG and trainSVM functions.
@@ -62,7 +73,7 @@ else
     [Xtr2, ytr] = extractHOG(imdsTrain, C.imageSize, C.hog.cellSize);
     [Xte2, yte] = extractHOG(imdsTest,  C.imageSize, C.hog.cellSize);
     save(mdl2Path, 'Xtr2','Xte2','ytr','yte');
-end,
+end
 
 % trainSVM
 % You can use fitcsvm here designed for binary classification. 
