@@ -142,15 +142,14 @@ end
 mdl31Path = fullfile(C.modelCacheDir, 'Task3_bovw_features.mat');
 if exist(mdl31Path, 'file')
     load(mdl31Path, 'Xtr3','Xte3','ytr','yte');
-    extrData3 = data3.extrData3;
 else
     [Xtr3,ytr] = bovw_encode(imdsTrain, C.imageSize, vocab, C.bovw);
     [Xte3,yte] = bovw_encode(imdsTest,  C.imageSize, vocab, C.bovw);
     save(mdl31Path, 'Xtr3','Xte3','ytr','yte');
 end
 
-mdl3 = trainSVM(Xtr3, ytr, C.svm.kernel);
-yhat3 = predict(mdl3, Xte3);
+mdl3 = trainSVM(Xtr3, ytr, false, C.svm.kernel);
+yhat3 = predictSVM(mdl3, Xte3);
 
 runFullEvaluation(imdsTest, yte, yhat3, classes, "Task3_BoVW_SVM", C.outDir);
 
