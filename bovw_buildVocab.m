@@ -64,7 +64,7 @@ for i = 1:numel(idx)
         continue;
     end
 
-    desc = double(desc);
+    desc = single(desc); % Can be run as double if memory is available
 
     if size(desc,1) == 64 && size(desc,2) ~= 64
         desc = desc';
