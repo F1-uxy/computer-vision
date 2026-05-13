@@ -20,6 +20,8 @@ imdsTest = createLabeledImageDatastore(testDir);
 
 classes = C.classOrder;
 
+
+
 %% ================= TASK 1 =================
 % You need to write extractTinyImages which is provided as obscured p-code so that you can run the code and see an example results including confusion matrix and image gallery generated.
 % You should consider passing more relevant parameters to this function, e.g. 'rgb' or 'grayscale', type of normalisation, type of cropping etc.
@@ -62,18 +64,12 @@ for i = 1:9
     title(string(ytr(i)));
 end
 %}
+
+
+
 %% ================= TASK 2 =================
 % As in Task 1, you need to implement exctractHOG and trainSVM functions.
 % As above you should include more parameters. You should define them in config.
-
-mdl2Path = fullfile(C.modelCacheDir, 'Task2_HOG_SVM_model.mat');
-if exist(mdl2Path, 'file')
-    load(mdl2Path,'Xtr2','Xte2','ytr','yte');
-else
-    [Xtr2, ytr] = extractHOG(imdsTrain, C.imageSize, C.hog.cellSize);
-    [Xte2, yte] = extractHOG(imdsTest,  C.imageSize, C.hog.cellSize);
-    save(mdl2Path, 'Xtr2','Xte2','ytr','yte');
-end
 
 % trainSVM
 % You can use fitcsvm here designed for binary classification. 
@@ -96,10 +92,25 @@ end
 
 % You shoud use this approach in all places in your coursework where you use SVM.
 
-mdl2 = trainSVM(Xtr2, ytr, true, C.svm.kernel);
-yhat2 = predictSVM(mdl2, Xte2); 
 
-runFullEvaluation(imdsTest, yte, yhat2, classes, "Task2_HOG_SVM", C.outDir);
+% mdl2Path = fullfile(C.modelCacheDir, 'Task2_HOG_SVM_model.mat');
+% if exist(mdl2Path, 'file')
+%     load(mdl2Path,'Xtr2','Xte2','ytr','yte');
+% else
+%     [Xtr2, ytr] = extractHOG(imdsTrain, C.imageSize, C.hog.cellSize);
+%     [Xte2, yte] = extractHOG(imdsTest,  C.imageSize, C.hog.cellSize);
+%     save(mdl2Path, 'Xtr2','Xte2','ytr','yte');
+% end
+% 
+% 
+% mdl2 = trainSVM(Xtr2, ytr, true, C.svm.kernel);
+% yhat2 = predictSVM(mdl2, Xte2); 
+% 
+% runFullEvaluation(imdsTest, yte, yhat2, classes, "Task2_HOG_SVM", C.outDir);
+
+
+
+
 
 %% ================= TASK 3 =================
 % As in previous tasks you need to implement bovw_buildVocab and bovw_encode functions. You can use trainSVM developed for Task 2.
@@ -130,7 +141,7 @@ runFullEvaluation(imdsTest, yte, yhat2, classes, "Task2_HOG_SVM", C.outDir);
 % SURF features will look very different from a smaller version of the same
 % image.
 
-
+%{
 mdl3Path = fullfile(C.modelCacheDir, 'Task3_bovw_vocab.mat');
 if exist(mdl3Path, 'file')
     load(mdl3Path, 'vocab');
@@ -154,6 +165,9 @@ yhat3 = predict(mdl3, Xte3);
 
 runFullEvaluation(imdsTest, yte, yhat3, classes, "Task3_BoVW_SVM", C.outDir);
 
+%}
+
+
 %% ================= TASK 4 =================
 % As in previous tasks you need to implement trainTranferCNN and predictTransferCNN. 
 % You need to perform experiments demonstrating fine-tuning of the pretrained resnet18 network.
@@ -162,10 +176,15 @@ netStruct = trainTransferCNN(imdsTrain, classes, C);
 yhat4 = predictTransferCNN(netStruct, imdsTest);
 yte = imdsTest.Labels;
 runFullEvaluation(imdsTest, yte, yhat4, classes, "Task4_TransferCNN", C.outDir);
+
+
+
+
 %% ================= TASK 5 =================
 % This one is up to you as described in coursework brief.
 
 %% HELPER FUNCTIONS - no need to edit
+
 
 function imds = createLabeledImageDatastore(dataDir)
     allowedExt = {'.jpg', '.jpeg', '.png', '.bmp', '.tif', '.tiff'};
@@ -210,3 +229,4 @@ function [files, labels] = collectImageFiles(currentDir, allowedExt, files, labe
         labels{end+1,1} = lower(char(labelName));
     end
 end
+%}

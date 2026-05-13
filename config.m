@@ -33,12 +33,22 @@ C.svm.boxConstraint = 1;
 C.bovw.numWords = 200;
 C.bovw.stepSize = 8;
 
+%Task 4
+C.transfer.mode = "partial";
 %some sample CNN parameters, you will need some extra parameters describing how you do the fine tuning e.g. layers to be frozen
 C.cnn.base = "resnet18";
-C.cnn.epochs = 5;
+C.cnn.epochs = 10;
 C.cnn.miniBatchSize = 16;
 C.cnn.initialLearnRate = 1e-4;
 C.cnn.l2 = 1e-4;
+
+C.cnn.validationSplit = 0.2;
+
+C.cnn.freezeUntilBlock = "res5";
+
+C.cnn.augment.flip = true;
+C.cnn.augment.rotation = [-10 10];
+C.cnn.augment.translation = [-5 5];
 
 C.resultsRoot = fullfile(baseDir, "results");
 if ~isfolder(C.resultsRoot), mkdir(C.resultsRoot); end
