@@ -87,6 +87,15 @@ else
     save(mdl2Path, 'Xtr2','Xte2','ytr','yte');
 end
 
+mdl2KNNPath = fullfile(C.modelCacheDir, 'Task2_HOG_kNN_model.mat');
+if exist(mdl2KNNPath, 'file')
+    modelData = load(mdl2KNNPath, 'mdl1');
+    mdl2KNN = modelData.mdl1;
+else
+    mdl2KNN = trainKNN(Xtr2, ytr, C.knn.auto, C.knn.k, C.knn.dist, C.knn.std); 
+    save(mdl2KNNPath, 'mdl2KNN');
+end
+
 % trainSVM
 % You can use fitcsvm here designed for binary classification. 
 % You should train a linear linear SVM for every category (i.e. one vs all)
@@ -112,6 +121,9 @@ mdl2 = trainSVM(Xtr2, ytr, false, C.svm.kernel);
 yhat2 = predictSVM(mdl2, Xte2); 
 
 runFullEvaluation(imdsTest, yte, yhat2, classes, "Task2_HOG_SVM", C.outDir);
+
+yhat2KNN = predict(mdl2KNN, Xte2); 
+runFullEvaluation(imdsTest, yte, yhat2KNN, classes, "Task2_HOG_KNN", C.outDir);
 
 %% ================= TASK 3 =================
 % As in previous tasks you need to implement bovw_buildVocab and bovw_encode functions. You can use trainSVM developed for Task 2.
@@ -176,15 +188,15 @@ runFullEvaluation(imdsTest, yte, yhat4, classes, "Task4_TransferCNN", C.outDir);
 %% ================= TASK 5 =================
 % GLCM + Random Forest
 
-mdl5Path = fullfile(C.modelCacheDir, 'Task5_randomforest.mat');
+mdl5Path = fullfile(C.modelCacheDir, 'Task5_randomforest_levels.mat');
 
 if exist(mdl5Path, 'file')
     load(mdl5Path, 'mdl5', 'Xtr5', 'Xte5', 'ytr5', 'yte5');
 else
-    [Xtr5, ytr5] = extractGLCMFeatures(imdsTrain, C.imageSize, true);
-    [Xte5, yte5] = extractGLCMFeatures(imdsTest,  C.imageSize, true);
+    [Xtr5, ytr5] = extractGLCMFeatures(imdsTrain, C.imageSize);
+    [Xte5, yte5] = extractGLCMFeatures(imdsTest,  C.imageSize);
 
-    mdl5 = trainRandomForest(Xtr5, ytr5);
+    mdl5 = trainRandomForest(Xtr5, ytr5, true);
 
     save(mdl5Path, 'mdl5', 'Xtr5', 'Xte5', 'ytr5', 'yte5');
 end
@@ -239,3 +251,7 @@ function [files, labels] = collectImageFiles(currentDir, allowedExt, files, labe
         labels{end+1,1} = lower(char(labelName));
     end
 end
+
+%%
+img = readimage(imdsTrain, 2);
+imshow(img)
