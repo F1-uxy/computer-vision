@@ -30,8 +30,11 @@ C.svm.kernel = "linear";
 C.svm.boxConstraint = 1;
 
 %Task 3
-C.bovw.numWords = 200;
-C.bovw.stepSize = 8;
+C.bovw.numWords     = 500;
+C.bovw.vocabStep    = 8;     
+C.bovw.encodeStep   = 4;   
+C.bovw.surfMetric   = 100;   
+C.bovw.numTrainImgs = Inf;   
 
 %Task 4
 C.transfer.mode = "partial";
