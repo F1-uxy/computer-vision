@@ -37,11 +37,11 @@ C.bovw.surfMetric   = 100;
 C.bovw.numTrainImgs = Inf;   
 
 %Task 4
-C.transfer.mode = "partial";
+C.transfer.mode = "full";
 %some sample CNN parameters, you will need some extra parameters describing how you do the fine tuning e.g. layers to be frozen
 C.cnn.base = "resnet18";
 C.cnn.epochs = 10;
-C.cnn.miniBatchSize = 16;
+C.cnn.miniBatchSize = 32;
 C.cnn.initialLearnRate = 1e-4;
 C.cnn.l2 = 1e-4;
 

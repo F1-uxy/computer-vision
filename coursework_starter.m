@@ -36,7 +36,6 @@ classes = C.classOrder;
 % Your fine-tuning should be done using cross-validation on a training set part of the dataset.
 % Of course, you need to test your fine-tune model on the test set part of the dataset using the Matlab built in predict function.
 
-%{ 
 [Xtr1, ytr] = extractTinyImages(imdsTrain, C.thumbnailSize, C.greyscale);
 [Xte1, yte] = extractTinyImages(imdsTest,  C.thumbnailSize, C.greyscale);
 
@@ -46,8 +45,8 @@ if exist(mdl1Path, 'file')
     mdl1 = modelData.mdl1;
 else
     mdl1 = trainKNN(Xtr1, ytr, C.knn.auto, C.knn.k, C.knn.dist, C.knn.std); 
-    % save(mdl1Path, 'mdl1'); Enable this one happy with model otherwise
-    % you have to delete the cache manually
+    save(mdl1Path, 'mdl1'); Enable this one happy with model otherwise
+    you have to delete the cache manually
 end
 
 yhat1 = predict(mdl1, Xte1);
@@ -63,7 +62,6 @@ for i = 1:9
     imshow(img);
     title(string(ytr(i)));
 end
-%}
 
 
 
@@ -93,20 +91,20 @@ end
 % You shoud use this approach in all places in your coursework where you use SVM.
 
 
-% mdl2Path = fullfile(C.modelCacheDir, 'Task2_HOG_SVM_model.mat');
-% if exist(mdl2Path, 'file')
-%     load(mdl2Path,'Xtr2','Xte2','ytr','yte');
-% else
-%     [Xtr2, ytr] = extractHOG(imdsTrain, C.imageSize, C.hog.cellSize);
-%     [Xte2, yte] = extractHOG(imdsTest,  C.imageSize, C.hog.cellSize);
-%     save(mdl2Path, 'Xtr2','Xte2','ytr','yte');
-% end
-% 
-% 
-% mdl2 = trainSVM(Xtr2, ytr, true, C.svm.kernel);
-% yhat2 = predictSVM(mdl2, Xte2); 
-% 
-% runFullEvaluation(imdsTest, yte, yhat2, classes, "Task2_HOG_SVM", C.outDir);
+mdl2Path = fullfile(C.modelCacheDir, 'Task2_HOG_SVM_model.mat');
+if exist(mdl2Path, 'file')
+    load(mdl2Path,'Xtr2','Xte2','ytr','yte');
+else
+    [Xtr2, ytr] = extractHOG(imdsTrain, C.imageSize, C.hog.cellSize);
+    [Xte2, yte] = extractHOG(imdsTest,  C.imageSize, C.hog.cellSize);
+    save(mdl2Path, 'Xtr2','Xte2','ytr','yte');
+end
+
+
+mdl2 = trainSVM(Xtr2, ytr, true, C.svm.kernel);
+yhat2 = predictSVM(mdl2, Xte2); 
+
+runFullEvaluation(imdsTest, yte, yhat2, classes, "Task2_HOG_SVM", C.outDir);
 
 
 
@@ -141,7 +139,7 @@ end
 % SURF features will look very different from a smaller version of the same
 % image.
 
-%{
+
 mdl3Path = fullfile(C.modelCacheDir, 'Task3_bovw_vocab.mat');
 if exist(mdl3Path, 'file')
     load(mdl3Path, 'vocab');
@@ -165,7 +163,7 @@ yhat3 = predict(mdl3, Xte3);
 
 runFullEvaluation(imdsTest, yte, yhat3, classes, "Task3_BoVW_SVM", C.outDir);
 
-%}
+
 
 
 %% ================= TASK 4 =================
@@ -173,12 +171,105 @@ runFullEvaluation(imdsTest, yte, yhat3, classes, "Task3_BoVW_SVM", C.outDir);
 % You need to perform experiments demonstrating fine-tuning of the pretrained resnet18 network.
 
 netStruct = trainTransferCNN(imdsTrain, classes, C);
+% or
+% load('bestTransferNet.mat');
+
 yhat4 = predictTransferCNN(netStruct, imdsTest);
 yte = imdsTest.Labels;
 runFullEvaluation(imdsTest, yte, yhat4, classes, "Task4_TransferCNN", C.outDir);
 
 
+% Parameter Experimentation - Do Not Run in Final
 
+% function resultsTable = runTransferGridSearch(imdsTrain, imdsTest, classes, C)
+% 
+% modes = ["frozen", "partial", "full"];
+% learnRates = [1e-3, 1e-4, 1e-5];
+% batchSizes = [8, 16, 32];
+% 
+% results = [];
+% 
+% expNum = 1;
+% 
+% bestAcc = 0;
+% 
+% for m = 1:length(modes)
+% 
+%     for lr = 1:length(learnRates)
+% 
+%         for bs = 1:length(batchSizes)
+% 
+%             fprintf('\n=====================================\n');
+%             fprintf('Experiment %d\n', expNum);
+%             fprintf('Mode: %s\n', modes(m));
+%             fprintf('LR: %f\n', learnRates(lr));
+%             fprintf('Batch: %d\n', batchSizes(bs));
+%             fprintf('=====================================\n');
+% 
+%             % Update config
+%             C.transfer.mode = modes(m);
+% 
+%             C.cnn.initialLearnRate = learnRates(lr);
+% 
+%             C.cnn.miniBatchSize = batchSizes(bs);
+% 
+%             try
+% 
+%                 % Train
+%                 netStruct = trainTransferCNN(imdsTrain, classes, C);
+% 
+%                 % Predict
+%                 yhat = predictTransferCNN(netStruct, imdsTest);
+% 
+%                 ytrue = imdsTest.Labels;
+% 
+%                 % Accuracy
+%                 acc = mean(yhat == ytrue);
+% 
+%                 fprintf('Accuracy = %.4f\n', acc);
+% 
+%                 % Store results
+%                 results = [results;
+%                     {char(modes(m)), ...
+%                      learnRates(lr), ...
+%                      batchSizes(bs), ...
+%                      acc}];
+%                 if acc > bestAcc
+%                     bestAcc = acc;
+%                     save('bestTransferNet.mat','netStruct','acc');
+%                 end
+%             catch ME
+% 
+%                 fprintf('FAILED: %s\n', ME.message);
+% 
+%                 results = [results;
+%                     {char(modes(m)), ...
+%                      learnRates(lr), ...
+%                      batchSizes(bs), ...
+%                      NaN}];
+%             end
+% 
+%             expNum = expNum + 1;
+% 
+%         end
+%     end
+% end
+% 
+% resultsTable = cell2table(results, ...
+%     'VariableNames', ...
+%     {'Mode','LearningRate','BatchSize','Accuracy'});
+% 
+% disp(resultsTable);
+% 
+% writetable(resultsTable, 'transfer_gridsearch_results.csv');
+% 
+% end
+
+% resultsTable = runTransferGridSearch( ...
+%     imdsTrain, ...
+%     imdsTest, ...
+%     classes, ...
+%     C)
 
 %% ================= TASK 5 =================
 % This one is up to you as described in coursework brief.
