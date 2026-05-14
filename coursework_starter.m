@@ -45,25 +45,32 @@ if exist(mdl1Path, 'file')
     mdl1 = modelData.mdl1;
 else
     mdl1 = trainKNN(Xtr1, ytr, C.knn.auto, C.knn.k, C.knn.dist, C.knn.std); 
-    save(mdl1Path, 'mdl1'); Enable this one happy with model otherwise
-    you have to delete the cache manually
+    save(mdl1Path, 'mdl1'); % Enable this one happy with model otherwise
+    % you have to delete the cache manually
 end
 
-yhat1 = predict(mdl1, Xte1);
+mdl1PathSVM = fullfile(C.modelCacheDir, 'Task1_SVM_model.mat');
+if exist(mdl1PathSVM, 'file')
+    modelData = load(mdl1PathSVM, 'mdl1svm');
+    mdl1svm = modelData.mdl1svm;
+else
+    mdl1svm = trainSVM(Xtr1, ytr, true, C.svm.kernel);
+    save(mdl1PathSVM, 'mdl1svm');
+end
 
+yhat1 = predictModel(mdl1, Xte1, yte);
 runFullEvaluation(imdsTest, yte, yhat1, classes, "Task1_kNN", C.outDir);
 
-%% === TASK 1 TESTERS ===
-% Just displays a few tiny'ified images for a sanity check
+yhat2 = predictSVM(mdl1svm, Xte1, yte); 
+runFullEvaluation(imdsTest, yte, yhat2, classes, "Task1_SVM", C.outDir);
+
 figure;
 for i = 1:9
-    img = reshape(Xtr1(i,:), C.thumbnailSize(1), C.thumbnailSize(2), 1); % 1 for greyscale ; 3 for rgb
+    img = reshape(Xtr1(i,:), C.thumbnailSize(1), C.thumbnailSize(2), 3); % 1 for greyscale ; 3 for rgb
     subplot(3,3,i);
     imshow(img);
     title(string(ytr(i)));
 end
-
-
 
 %% ================= TASK 2 =================
 % As in Task 1, you need to implement exctractHOG and trainSVM functions.
@@ -100,14 +107,22 @@ else
     save(mdl2Path, 'Xtr2','Xte2','ytr','yte');
 end
 
+mdl2KNNPath = fullfile(C.modelCacheDir, 'Task2_HOG_kNN_model.mat');
+if exist(mdl2KNNPath, 'file')
+    modelData = load(mdl2KNNPath, 'mdl1');
+    mdl2KNN = modelData.mdl1;
+else
+    mdl2KNN = trainKNN(Xtr2, ytr, C.knn.auto, C.knn.k, C.knn.dist, C.knn.std); 
+    save(mdl2KNNPath, 'mdl2KNN');
+end
 
-mdl2 = trainSVM(Xtr2, ytr, true, C.svm.kernel);
+mdl2 = trainSVM(Xtr2, ytr, false, C.svm.kernel);
 yhat2 = predictSVM(mdl2, Xte2); 
 
 runFullEvaluation(imdsTest, yte, yhat2, classes, "Task2_HOG_SVM", C.outDir);
 
-
-
+yhat2KNN = predictModel(mdl2KNN, Xte2); 
+runFullEvaluation(imdsTest, yte, yhat2KNN, classes, "Task2_HOG_KNN", C.outDir);
 
 
 %% ================= TASK 3 =================
@@ -151,20 +166,16 @@ end
 mdl31Path = fullfile(C.modelCacheDir, 'Task3_bovw_features.mat');
 if exist(mdl31Path, 'file')
     load(mdl31Path, 'Xtr3','Xte3','ytr','yte');
-    extrData3 = data3.extrData3;
 else
     [Xtr3,ytr] = bovw_encode(imdsTrain, C.imageSize, vocab, C.bovw);
     [Xte3,yte] = bovw_encode(imdsTest,  C.imageSize, vocab, C.bovw);
     save(mdl31Path, 'Xtr3','Xte3','ytr','yte');
 end
 
-mdl3 = trainSVM(Xtr3, ytr, C.svm.kernel);
-yhat3 = predict(mdl3, Xte3);
+mdl3 = trainSVM(Xtr3, ytr, true, C.svm.kernel);
+yhat3 = predictSVM(mdl3, Xte3, yte);
 
 runFullEvaluation(imdsTest, yte, yhat3, classes, "Task3_BoVW_SVM", C.outDir);
-
-
-
 
 %% ================= TASK 4 =================
 % As in previous tasks you need to implement trainTranferCNN and predictTransferCNN. 
@@ -272,7 +283,25 @@ runFullEvaluation(imdsTest, yte, yhat4, classes, "Task4_TransferCNN", C.outDir);
 %     C)
 
 %% ================= TASK 5 =================
-% This one is up to you as described in coursework brief.
+% GLCM + Random Forest
+
+mdl5Path = fullfile(C.modelCacheDir, 'Task5_randomforest.mat');
+
+if exist(mdl5Path, 'file')
+    load(mdl5Path, 'mdl5', 'Xtr5', 'Xte5', 'ytr5', 'yte5');
+else
+    [Xtr5, ytr5] = extractGLCMFeatures(imdsTrain, C.imageSize);
+    [Xte5, yte5] = extractGLCMFeatures(imdsTest,  C.imageSize);
+
+    mdl5 = trainRandomForest(Xtr5, ytr5, true);
+
+    save(mdl5Path, 'mdl5', 'Xtr5', 'Xte5', 'ytr5', 'yte5');
+end
+
+yhat5 = predictModel(mdl5, Xte5, yte5);
+
+runFullEvaluation(imdsTest, yte5, yhat5, classes, ...
+    "Task5_GLCM_RandomForest", C.outDir);
 
 %% HELPER FUNCTIONS - no need to edit
 

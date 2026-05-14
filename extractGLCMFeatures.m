@@ -33,8 +33,8 @@ numStats = 4;
 
 pyramidLevels = {
     [1 1];
-    [2 2];
-    [4 4];
+    %[2 2];
+    %[4 4];
 };
 
 numRegions = 0;
