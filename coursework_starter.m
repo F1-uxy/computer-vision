@@ -112,7 +112,7 @@ if exist(mdl2SVMPath, 'file')
     modelData = load(mdl2SVMPath, 'mdl2SVM');
     mdl2SVM = modelData.mdl2SVM;
 else
-    mdl2SVM = trainSVM(Xtr2, ytr, true, C.svm.kernel); 
+    mdl2SVM = trainSVM(Xtr2, ytr, false, C.svm.kernel); 
     save(mdl2SVMPath, 'mdl2SVM');
 end
 
