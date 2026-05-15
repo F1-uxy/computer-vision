@@ -98,31 +98,41 @@ end
 % You shoud use this approach in all places in your coursework where you use SVM.
 
 
-mdl2Path = fullfile(C.modelCacheDir, 'Task2_HOG_SVM_model.mat');
-if exist(mdl2Path, 'file')
-    load(mdl2Path,'Xtr2','Xte2','ytr','yte');
+mdl2FeaturesPath = fullfile(C.modelCacheDir, 'Task2_HOG_SVM_features.mat');
+if exist(mdl2FeaturesPath, 'file')
+    load(mdl2FeaturesPath,'Xtr2','Xte2','ytr','yte');
 else
     [Xtr2, ytr] = extractHOG(imdsTrain, C.imageSize, C.hog.cellSize);
     [Xte2, yte] = extractHOG(imdsTest,  C.imageSize, C.hog.cellSize);
-    save(mdl2Path, 'Xtr2','Xte2','ytr','yte');
+    save(mdl2FeaturesPath, 'Xtr2','Xte2','ytr','yte');
+end
+
+mdl2SVMPath = fullfile(C.modelCacheDir, 'Task2_HOG_SVM_model.mat');
+if exist(mdl2SVMPath, 'file')
+    modelData = load(mdl2SVMPath, 'mdl2SVM');
+    mdl2SVM = modelData.mdl2SVM;
+else
+    mdl2SVM = trainSVM(Xtr2, ytr, true, C.svm.kernel); 
+    save(mdl2SVMPath, 'mdl2SVM');
 end
 
 mdl2KNNPath = fullfile(C.modelCacheDir, 'Task2_HOG_kNN_model.mat');
 if exist(mdl2KNNPath, 'file')
-    modelData = load(mdl2KNNPath, 'mdl1');
-    mdl2KNN = modelData.mdl1;
+    modelData = load(mdl2KNNPath, 'mdl2KNN');
+    mdl2KNN = modelData.mdl2KNN;
 else
     mdl2KNN = trainKNN(Xtr2, ytr, C.knn.auto, C.knn.k, C.knn.dist, C.knn.std); 
     save(mdl2KNNPath, 'mdl2KNN');
 end
 
-mdl2 = trainSVM(Xtr2, ytr, false, C.svm.kernel);
-yhat2 = predictSVM(mdl2, Xte2); 
+
+yhat2 = predictSVM(mdl2SVM, Xte2, yte); 
 
 runFullEvaluation(imdsTest, yte, yhat2, classes, "Task2_HOG_SVM", C.outDir);
 
-yhat2KNN = predictModel(mdl2KNN, Xte2); 
+yhat2KNN = predictModel(mdl2KNN, Xte2, yte); 
 runFullEvaluation(imdsTest, yte, yhat2KNN, classes, "Task2_HOG_KNN", C.outDir);
+
 
 
 %% ================= TASK 3 =================
@@ -181,9 +191,15 @@ runFullEvaluation(imdsTest, yte, yhat3, classes, "Task3_BoVW_SVM", C.outDir);
 % As in previous tasks you need to implement trainTranferCNN and predictTransferCNN. 
 % You need to perform experiments demonstrating fine-tuning of the pretrained resnet18 network.
 
-netStruct = trainTransferCNN(imdsTrain, classes, C);
-% or
-% load('bestTransferNet.mat');
+
+mdl4CNNPath = fullfile(C.modelCacheDir, 'Task4_TransferNet.mat');
+if exist(mdl4CNNPath, 'file')
+    modelData = load(mdl4CNNPath, 'mdl4CNN');
+    mdl4CNN = modelData.mdl4CNN;
+else
+    mdl4CNN = trainTransferCNN(imdsTrain, classes, C);
+    save(mdl4CNNPath, 'mdl4CNN');
+end
 
 yhat4 = predictTransferCNN(netStruct, imdsTest);
 yte = imdsTest.Labels;

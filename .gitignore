@@ -1,3 +1,4 @@
 data/
 *.asv
 results/
+!results/model_cache/
